@@ -87,6 +87,7 @@ function Charts(props){
     const [pieData, setPieData] = useState([]);
     const [datesArr, setDatesArr] = useState([]);
     const [curDate, setCurDate] = useState();
+    const [countrySearch, setCountrySearch] = useState();
 
     async function getData(){
         const data = await axios.get('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv');
@@ -129,6 +130,17 @@ function Charts(props){
         }
     };
 
+    function getSearch(e){
+        setCountrySearch(e.target.value);
+        for (let i = 0; i < pieData.length; i++) {
+            const name = pieData[i].name.toLowerCase();
+            if (name.includes(e.target.value)){
+                onPieEnter(pieData[i], i);
+                break;
+            };
+        }
+    }
+
     useEffect( () => { 
         getData();
         const dataInterval = setInterval(getData, 60000);
@@ -146,7 +158,7 @@ function Charts(props){
             {fullData.filter(country => country['Province/State'] !== option1['Province/State'] || country['Country/Region'] !== option1['Country/Region']).map(country => <option value={country['Province/State'] + ':' + country['Country/Region']}>{country['Province/State'] + ' ' + country['Country/Region']}</option>)}
             </select>}
             <br/>
-            {(option1 && option2) &&  <h3>Number of infected over days<LineChart className="chart1" width={1000} height={600}>
+            {(option1 && option2) && <div> <h3>Number of infected over days</h3><LineChart className="chart1" width={1000} height={600}>
                             <CartesianGrid/>
                             <XAxis dataKey="date" allowDuplicatedCategory={false}/>
                             <YAxis className = "Yaxis" dataKey="infected"/>
@@ -155,13 +167,14 @@ function Charts(props){
                             {[option1, option2].map((s, index) => (
                             <Line dataKey="infected" data={s["dates"]} name={s['Province/State'] + ' ' + s['Country/Region']} key={index} stroke =  {colors[index]}/>
                             ))}
-                        </LineChart></h3>
+                        </LineChart></div>
             }
             <br/>
             <select onChange={e => getPieData(e)}>
                 <option>choose date ...</option>
             {datesArr.map(date => <option value={date}>{date}</option>)}
             </select>
+            {curDate && <input style={{width:"150px"}} type="text" id="name" onChange={(e) => getSearch(e)} placeholder="enter country name"/>}
             {curDate && <h3>Number of infected in every country
             <PieChart className="chart2" width={800} height={600}>
                 <Pie
@@ -170,8 +183,8 @@ function Charts(props){
                 data={pieData}
                 cx={400}
                 cy={250}
-                innerRadius={100}
-                outerRadius={200}
+                innerRadius={140}
+                outerRadius={230}
                 fill="cyan"
                 dataKey="infected"
                 onMouseEnter={onPieEnter}
